@@ -7,23 +7,18 @@ import {
     DialogContent,
     DialogContentText,
     DialogTitle,
-    TextField,
-    FormControl,
-    FormLabel,
-    RadioGroup,
-    FormControlLabel,
-    Radio,
-    InputLabel,
-    Select,
-    Input,
-    Chip,
-    MenuItem,
 } from "@material-ui/core";
 import { useSelector, useDispatch } from "react-redux";
 import { createRequest, cancelRequest } from "../redux/actions/request";
+import CustomFormComponent from '../components/CustomFormComponent';
 import { useHistory } from "react-router-dom";
 import moment from "moment";
-import { makeStyles } from "@material-ui/core/styles";
+
+const initialReservationFields = {
+    email: "",
+    phone: "",
+    time: "",
+};
 
 const yesNoOptions = [
     {
@@ -49,111 +44,48 @@ const accommodationList = [
     { key: 8, label: "Beach Cruiser Bike" },
 ];
 
-const useStyles = makeStyles((theme) => ({
-    formControl: {
-        margin: theme.spacing(1),
-        minWidth: 120,
-        maxWidth: 300,
-        display: "flex",
-    },
-    chips: {
-        display: "flex",
-        flexWrap: "wrap",
-    },
-}));
-
 function ReservationModal(props) {
     const dispatch = useDispatch();
-    const history = useHistory();
+
     const { open, handleClose, card, currentUserReserved } = props;
     const userDetails = useSelector((state) => state.user.userDetails);
-    // basic fields
-    const [email, setEmail] = useState("");
-    const [phone, setPhone] = useState("");
-    const [time, setTime] = useState("");
-    // premium fields
-    const [foodService, setFoodService] = useState("");
-    const [cocktailService, setCocktailService] = useState("");
-    const [accommodations, setaccommodations] = useState([]);
-    const classes = useStyles();
-    const ITEM_HEIGHT = 48;
-    const ITEM_PADDING_TOP = 8;
-    const MenuProps = {
-        PaperProps: {
-            style: {
-                maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-                width: 250,
-            },
-        },
-    };
+    const [fields, setFields] = useState({});
+    const history = useHistory();
 
     useEffect(() => {
         if (card) {
-            setEmail(card.fields.email);
-            setPhone(card.fields.phone);
-            setTime(card.fields.time);
-            setFoodService(card.fields.foodService);
-            setCocktailService(card.fields.cocktailService);
-            setaccommodations(card.fields.accomodations);
+            setFields(card.fields);
         }
     }, [card]);
 
-    const handleFieldChange = (event, type) => {
-        event.preventDefault();
-        if (type === "email") {
-            setEmail(event.target.value);
-        } else if (type === "phone") {
-            setPhone(event.target.value);
-        } else if (type === "time") {
-            setTime(event.target.value);
-        } else if (type === "foodService") {
-            setFoodService(event.target.value);
-        } else if (type === "cocktailService") {
-            setCocktailService(event.target.value);
-        } else if (type === "accommodations") {
-            setaccommodations(event.target.value);
+    useEffect(() => {
+        if (!currentUserReserved) {
+            setFields(initialReservationFields);
         }
+    }, [currentUserReserved]);
+
+    const handleFieldChange = (event, type) => {
+        setFields({
+            ...fields,
+            [type]: event.target.value,
+        });
     };
 
     const handleReserve = () => {
-        if (userDetails.tier === "basic") {
-            let basicRequest = {
-                id: card.id,
-                spotId: card.id,
-                spotName: card.name,
-                numberAllowed: card.numberAllowed,
-                userName: userDetails.name,
-                imageURL: card.imageURL,
-                requestDay: moment().format("L"),
-                fields: {
-                    email: email,
-                    phone: phone,
-                    time: time,
-                },
-            };
+        let request = {
+            id: card.id,
+            spotId: card.id,
+            spotName: card.name,
+            numberAllowed: card.numberAllowed,
+            userName: userDetails.name,
+            imageURL: card.imageURL,
+            requestDay: moment().format("L"),
+            fields: {
+                ...fields,
+            },
+        };
 
-            dispatch(createRequest(userDetails.name, basicRequest));
-        } else if (userDetails.tier === "premium") {
-            let premiumRequest = {
-                id: card.id,
-                spotId: card.id,
-                spotName: card.name,
-                numberAllowed: card.numberAllowed,
-                userName: userDetails.name,
-                imageURL: card.imageURL,
-                requestDay: moment().format("L"),
-                fields: {
-                    email: email,
-                    phone: phone,
-                    time: time,
-                    foodService: foodService,
-                    cocktailService: cocktailService,
-                    accomodations: accommodations,
-                },
-            };
-
-            dispatch(createRequest(userDetails.name, premiumRequest));
-        }
+        dispatch(createRequest(userDetails.name, request));
         handleClose();
         history.push("/");
     };
@@ -181,151 +113,102 @@ function ReservationModal(props) {
                             : `${userDetails.name}, to reserve this spot, please fill out the following information`}
                     </DialogContentText>
                     <>
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            id="email"
-                            label="Email Address"
-                            type="email"
-                            fullWidth
-                            disabled={currentUserReserved}
-                            value={email ? email : ""}
-                            onChange={(event) =>
-                                handleFieldChange(event, "email")
-                            }
-                        />
-                        <TextField
-                            margin="dense"
-                            id="phone"
-                            label="Phone Number"
-                            type="tel"
-                            fullWidth
-                            disabled={currentUserReserved}
-                            value={phone ? phone : ""}
-                            onChange={(event) =>
-                                handleFieldChange(event, "phone")
-                            }
-                        />
-                        <TextField
-                            id="time"
-                            label="Time"
-                            type="time"
-                            disabled={currentUserReserved}
-                            fullWidth
-                            InputLabelProps={{
-                                shrink: true,
+                        <CustomFormComponent
+                            key="email"
+                            item={{
+                                label: "Email Address",
+                                name: "email",
+                                fieldtype: "text",
+                                id: "email",
+                                margin: "dense",
+                                type: "email",
+                                fullWidth: true,
+                                autoFocus: true,
                             }}
-                            inputProps={{
-                                step: 1800,
+                            fields={fields}
+                            handleFieldChange={handleFieldChange}
+                            currentUserReserved={currentUserReserved}
+                        />
+                        <CustomFormComponent
+                            key="phone"
+                            item={{
+                                label: "Phone Number",
+                                name: "phone",
+                                fieldtype: "text",
+                                id: "phone",
+                                margin: "dense",
+                                type: "tel",
+                                fullWidth: true,
                             }}
-                            value={time ? time : ""}
-                            onChange={(event) =>
-                                handleFieldChange(event, "time")
-                            }
+                            fields={fields}
+                            handleFieldChange={handleFieldChange}
+                            currentUserReserved={currentUserReserved}
+                        />
+                        <CustomFormComponent
+                            key="time"
+                            item={{
+                                label: "Time",
+                                name: "time",
+                                fieldtype: "text",
+                                id: "time",
+                                margin: "dense",
+                                type: "time",
+                                fullWidth: true,
+                                InputLabelProps: {
+                                    shrink: true,
+                                },
+                                inputProps: {
+                                    step: 1800,
+                                },
+                            }}
+                            fields={fields}
+                            handleFieldChange={handleFieldChange}
+                            currentUserReserved={currentUserReserved}
                         />
                     </>
 
                     {userDetails?.tier === "premium" && (
                         <>
                             <h3 className="subtitle">Premium Amenities</h3>
-                            <FormControl
-                                component="fieldset"
-                                className={classes.formControl}
-                            >
-                                <FormLabel component="legend">
-                                    Beachfront Food Service
-                                </FormLabel>
-                                <RadioGroup
-                                    aria-label="foodService"
-                                    name="foodService"
-                                    value={foodService ? foodService : ""}
-                                    onChange={(event) =>
-                                        handleFieldChange(event, "foodService")
-                                    }
-                                >
-                                    {yesNoOptions.map((item) => (
-                                        <FormControlLabel
-                                            key={item.key}
-                                            value={item.value}
-                                            disabled={currentUserReserved}
-                                            control={<Radio color="primary" />}
-                                            label={item.label}
-                                        />
-                                    ))}
-                                </RadioGroup>
-                            </FormControl>
-
-                            <FormControl
-                                component="fieldset"
-                                className={classes.formControl}
-                            >
-                                <FormLabel component="legend">
-                                    Beachfront Cocktail Service
-                                </FormLabel>
-                                <RadioGroup
-                                    aria-label="cocktailService"
-                                    name="cocktailService"
-                                    value={
-                                        cocktailService ? cocktailService : ""
-                                    }
-                                    onChange={(event) =>
-                                        handleFieldChange(
-                                            event,
-                                            "cocktailService"
-                                        )
-                                    }
-                                >
-                                    {yesNoOptions.map((item) => (
-                                        <FormControlLabel
-                                            key={item.key}
-                                            value={item.value}
-                                            disabled={currentUserReserved}
-                                            control={<Radio color="primary" />}
-                                            label={item.label}
-                                        />
-                                    ))}
-                                </RadioGroup>
-                            </FormControl>
-
-                            <FormControl className={classes.formControl}>
-                                <InputLabel id="multiple-select-label">
-                                    Accommodations
-                                </InputLabel>
-                                <Select
-                                    disabled={currentUserReserved}
-                                    labelId="chip-label-id"
-                                    id="mutiple-chip"
-                                    multiple
-                                    value={accommodations ? accommodations : []}
-                                    onChange={(event) =>
-                                        handleFieldChange(
-                                            event,
-                                            "accommodations"
-                                        )
-                                    }
-                                    input={<Input id="select-multiple-chip" />}
-                                    renderValue={(selected) => (
-                                        <div className={classes.chips}>
-                                            {selected.map((value) => (
-                                                <Chip
-                                                    key={value}
-                                                    label={value}
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
-                                    MenuProps={MenuProps}
-                                >
-                                    {accommodationList.map((name) => (
-                                        <MenuItem
-                                            key={name.key}
-                                            value={name.label}
-                                        >
-                                            {name.label}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
+                            <CustomFormComponent
+                                key="foodService"
+                                item={{
+                                    label: "Beachfront Food Service",
+                                    name: "foodService",
+                                    fieldtype: "radio",
+                                    id: "foodService",
+                                    options: yesNoOptions,
+                                }}
+                                fields={fields}
+                                handleFieldChange={handleFieldChange}
+                                currentUserReserved={currentUserReserved}
+                            />
+                            <CustomFormComponent
+                                key="cocktailService"
+                                item={{
+                                    label: "Beachfront Cocktail Service",
+                                    name: "cocktailService",
+                                    fieldtype: "radio",
+                                    id: "cocktailService",
+                                    options: yesNoOptions,
+                                }}
+                                fields={fields}
+                                handleFieldChange={handleFieldChange}
+                                currentUserReserved={currentUserReserved}
+                            />
+                            <CustomFormComponent
+                                key="accommodations"
+                                item={{
+                                    label: "Accommodations",
+                                    name: "accommodations",
+                                    fieldtype: "multiselect",
+                                    id: "accommodations",
+                                    options: accommodationList,
+                                }}
+                                fields={fields}
+                                handleFieldChange={handleFieldChange}
+                                currentUserReserved={currentUserReserved}
+                            />
                         </>
                     )}
                 </DialogContent>
@@ -336,7 +219,11 @@ function ReservationModal(props) {
                     {!currentUserReserved && (
                         <Button
                             onClick={handleReserve}
-                            disabled={currentUserReserved}
+                            disabled={
+                                !fields?.email ||
+                                !fields?.phone ||
+                                !fields?.time
+                            }
                             color="primary"
                         >
                             Reserve
