@@ -1,0 +1,49 @@
+.card-detail-container {
+    .hero-container {
+        height: 50vh;
+        position: absolute;
+        width: 100%;
+        top: 0;
+        left: 0;
+        overflow: hidden;
+        mask-image: -webkit-gradient(
+            linear,
+            left top,
+            left bottom,
+            from(black),
+            to(rgba(0, 0, 0, 0))
+        );
+        z-index: -1;
+        img {
+            width: 100%;
+        }
+    }
+
+    .content-container {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        margin-top: 10%;
+        align-items: center;
+
+        .title {
+            text-transform: capitalize;
+            font-weight: bold;
+            color: orange;
+        }
+
+        .description {
+            font-weight: normal;
+            color: #333;
+        }
+
+        .check-icon {
+            margin-right: 10px;
+            color: green;
+        }
+
+        button {
+            margin-top: 30px;
+        }
+    }
+}

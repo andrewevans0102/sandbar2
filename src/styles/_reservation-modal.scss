@@ -1,0 +1,16 @@
+.reservation-modal {
+    .title {
+        text-transform: capitalize;
+    }
+
+    .content-container {
+        .subtitle {
+            margin-top: 40px;
+        }
+    }
+
+    .action-container {
+        margin: 20px;
+        justify-content: space-between;
+    }
+}

@@ -1,0 +1,16 @@
+main {
+    min-height: 100vh;
+
+    .spot-title {
+        color: #053361;
+    }
+
+    .spot-container {
+        display: grid;
+        grid-template-columns: 33% 33% auto;
+        grid-template-rows: auto;
+        column-gap: 10px;
+        row-gap: 15px;
+        margin: 48px 0;
+    }
+}
