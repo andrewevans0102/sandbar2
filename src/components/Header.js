@@ -71,16 +71,18 @@ function Header() {
                             }}
                         />
                     </IconButton>
-                    <Typography component={"span"}>
-                        <Box
-                            letterSpacing={6}
-                            m={1}
-                            fontFamily="Lobster"
-                            fontSize={48}
-                        >
-                            Sandbar
-                        </Box>
-                    </Typography>
+                    <div>
+                        <Typography component={"span"}>
+                            <Box
+                                letterSpacing={6}
+                                m={1}
+                                fontFamily="Lobster"
+                                fontSize={48}
+                            >
+                                Sandbar
+                            </Box>
+                        </Typography>
+                    </div>
                     <div>
                         {Object.keys(userDetails).length > 0 && (
                             <IconButton onClick={handleProfile}>
